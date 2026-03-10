@@ -1,4 +1,5 @@
 # Butter Robot (Raspberry Pi 5 + Hailo + EV3dev)
+![butter robot banner](https://raw.githubusercontent.com/Gaiser147/ev3dev_butter-robot/refs/heads/main/butter_robot_banner.png)
 
 Autonomer Robot fuer Butter-Erkennung und Aufnahme:
 - Vision auf Raspberry Pi 5 + Hailo AI HAT+ (26 TOPS)
