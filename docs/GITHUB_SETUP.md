@@ -1,8 +1,45 @@
 # GitHub Setup (SSH + Push)
 
-Diese Schritte bringen den aktuellen Stand in ein GitHub-Repository.
+Diese Datei ist kurz gehalten: zuerst der Schnellweg, darunter Details.
 
-## 1) Branch und Commit lokal vorbereiten
+## Schnellweg
+
+```bash
+git branch -M main
+git remote set-url origin git@github.com:<USER>/<REPO>.git
+git add .
+git commit -m "docs: update repository documentation"
+git push -u origin main
+```
+
+Falls SSH noch nicht eingerichtet ist: Abschnitt "SSH-Key Setup" unten aufklappen.
+
+<details>
+<summary><strong>SSH-Key Setup (ausklappen)</strong></summary>
+
+## 1) SSH-Key pruefen/erstellen
+
+```bash
+ls -la ~/.ssh
+ssh-keygen -t ed25519 -C "<deine-email>"
+cat ~/.ssh/id_ed25519.pub
+```
+
+Public Key in GitHub hinterlegen:
+- GitHub -> Settings -> SSH and GPG keys -> New SSH key
+
+Verbindung testen:
+
+```bash
+ssh -T git@github.com
+```
+
+</details>
+
+<details>
+<summary><strong>Sauberer Erst-Commit (ausklappen)</strong></summary>
+
+## 2) Branch und Commit
 
 ```bash
 git branch -M main
@@ -30,34 +67,7 @@ git add \
   EV3_raspberry-setup.md \
   HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md
 
-git commit -m "docs: initialize repository structure and setup guides"
-```
-
-## 2) SSH-Key (falls noch nicht vorhanden)
-
-```bash
-ls -la ~/.ssh
-```
-
-Wenn kein Key vorhanden:
-
-```bash
-ssh-keygen -t ed25519 -C "<deine-email>"
-cat ~/.ssh/id_ed25519.pub
-```
-
-Public Key in GitHub hinterlegen:
-- GitHub -> Settings -> SSH and GPG keys -> New SSH key
-
-Verbindung testen:
-
-```bash
-ssh -T git@github.com
-```
-
-## 3) Remote setzen und pushen
-
-```bash
+git commit -m "docs: initialize butter robot repository"
 git remote add origin git@github.com:<USER>/<REPO>.git
 git push -u origin main
 ```
@@ -68,3 +78,5 @@ Wenn `origin` schon existiert:
 git remote set-url origin git@github.com:<USER>/<REPO>.git
 git push -u origin main
 ```
+
+</details>

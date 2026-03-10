@@ -1,79 +1,100 @@
 # Butter Robot (Raspberry Pi 5 + Hailo + EV3dev)
 
-Autonomer "Butter-Roboter" mit:
-- Raspberry Pi 5 (Ubuntu)
-- Hailo AI HAT+ (26 TOPS)
-- Raspberry Pi Kamera (libcamera)
-- LEGO EV3 (ev3dev) via USB + RPyC
+Autonomer Robot fuer Butter-Erkennung und Aufnahme:
+- Vision auf Raspberry Pi 5 + Hailo AI HAT+ (26 TOPS)
+- Aktorik auf LEGO EV3 (ev3dev) via USB + RPyC
+- Web-Ansicht mit Live-Stream und Robot-Status
 
-Das Projekt erkennt "butter" im Kamerabild (HEF-Modell), steuert den EV3 an die Position, fuehrt eine Pick-Sequenz aus und meldet den Fund per Sound.
+## Auf Einen Blick
 
-## Schnellzugriff
+| Thema | Startpunkt |
+| --- | --- |
+| Installation komplett (inkl. Training/HEF) | [docs/INSTALLATION.md](docs/INSTALLATION.md) |
+| Programmablauf + Diagramme | [docs/ARCHITEKTUR_UND_ABLAUF.md](docs/ARCHITEKTUR_UND_ABLAUF.md) |
+| Mermaid Ablaufdiagramm (direkt) | [Zum Diagramm](docs/ARCHITEKTUR_UND_ABLAUF.md#programmablauf-als-diagramm-einfach) |
+| HEF Hintergrund/Kompatibilitaet | [HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md](HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md) |
+| GitHub/SSH Setup | [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md) |
 
-- Installation komplett (inkl. Datensatz, Training, ONNX -> HEF): [docs/INSTALLATION.md](docs/INSTALLATION.md)
-- Robot-Architektur und Ablauf: [docs/ARCHITEKTUR_UND_ABLAUF.md](docs/ARCHITEKTUR_UND_ABLAUF.md)
-- Mermaid-Programmablauf (einfach): [Direkt zum Diagramm](docs/ARCHITEKTUR_UND_ABLAUF.md#programmablauf-als-diagramm-einfach)
-- GitHub/SSH Setup: [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md)
+## Schnellstart (HEF bereits vorhanden)
 
-## Wichtige Skripte
+```bash
+# 1) Auf EV3
+python3 ev3_start_rpyc_server.py --host 0.0.0.0 --port 18812
 
-- Autonomer Robot-Flow: [hailo_butter_ev3_alert.py](hailo_butter_ev3_alert.py)
-- Unified Web Control (Stream + Config + Robot-Prozess): [hailo_robot_web_control.py](hailo_robot_web_control.py)
-- Reiner Detektions-Stream: [hailo_web_detect_server.py](hailo_web_detect_server.py)
-- Pi USB/RPyC Client: [pi_ev3_rpyc_usb_client.py](pi_ev3_rpyc_usb_client.py)
-- EV3 RPyC Server Starter: [ev3_start_rpyc_server.py](ev3_start_rpyc_server.py)
-- Web Launcher: [start_hailo_webserver.sh](start_hailo_webserver.sh)
-- Robot Launcher direkt: [start_hailo_butter_alert.sh](start_hailo_butter_alert.sh)
-- Web Launcher intern: [start_hailo_robot_web.sh](start_hailo_robot_web.sh)
+# 2) Auf Raspberry Pi (USB/RPyC Test)
+sudo python3 pi_ev3_rpyc_usb_client.py --iface auto --oneshot --verbose
 
-## Laufzeitablauf (Kurzfassung)
+# 3) Robot starten (Web + Auto-Run)
+./start_hailo_webserver.sh
+```
 
-1. EV3 startet `rpyc_classic` (Port `18812`).
-2. Pi richtet USB-Interface ein und verbindet sich per RPyC.
-3. Hailo-Detektor liest Frames von Kamera/Stream und findet `butter`.
-4. Robot-Statemachine:
-   - `SEARCH_RANDOM` (drehen + pausieren + kurze Vorwaertsbewegung)
-   - `APPROACH_BUTTER` (zentrieren + anfahren)
-   - `PICK_SEQUENCE` (vorfahren, Lift runter, Lift hoch, sprechen)
-   - `DONE_STOP`
-5. Optional schreibt der Robot Telemetrie nach JSON (z. B. `/tmp/hailo_robot_telemetry.json`), die vom Web-Control-Overlay genutzt wird.
+Web UI: `http://<pi-ip>:8080`
 
-Details inkl. Mermaid-Ablaufdiagramm:
-- [docs/ARCHITEKTUR_UND_ABLAUF.md](docs/ARCHITEKTUR_UND_ABLAUF.md)
-- [Mermaid: Programmablauf als Diagramm (einfach)](docs/ARCHITEKTUR_UND_ABLAUF.md#programmablauf-als-diagramm-einfach)
+## Gesamtfluss (Kurz)
 
-## Installation
+```mermaid
+flowchart LR
+    A[Datensatz + Labeling] --> B[YOLO Training auf Ubuntu Desktop]
+    B --> C[ONNX Export]
+    C --> D[ONNX -> HEF mit Hailo Developer Suite]
+    D --> E[HEF auf Raspberry Pi]
+    E --> F[EV3 Verbindung per USB + RPyC]
+    F --> G[Robot Lauf: Suchen -> Anfahren -> Aufnehmen]
+```
 
-### End-to-End Prozess (wichtig)
+## Wichtige Dateien
+
+| Datei | Zweck |
+| --- | --- |
+| [hailo_butter_ev3_alert.py](hailo_butter_ev3_alert.py) | Autonomer Robot-Flow (State Machine) |
+| [hailo_robot_web_control.py](hailo_robot_web_control.py) | Web-UI, Config, Robot-Prozesssteuerung |
+| [hailo_web_detect_server.py](hailo_web_detect_server.py) | Reiner Detektions-Stream |
+| [pi_ev3_rpyc_usb_client.py](pi_ev3_rpyc_usb_client.py) | Robuste Pi -> EV3 USB/RPyC Verbindung |
+| [ev3_start_rpyc_server.py](ev3_start_rpyc_server.py) | EV3 `rpyc_classic` Start |
+| [start_hailo_webserver.sh](start_hailo_webserver.sh) | Haupt-Launcher fuer Webbetrieb |
+| [start_hailo_butter_alert.sh](start_hailo_butter_alert.sh) | Direktstart ohne Web |
+| [requirements-pi.txt](requirements-pi.txt) | Pi Python Dependencies |
+| [requirements-ev3.txt](requirements-ev3.txt) | EV3 Python Dependencies |
+
+<details>
+<summary><strong>Installationsdetails (ausklappen)</strong></summary>
+
+### End-to-End Reihenfolge
 
 1. Datensatz erstellen/labeln (Klasse `butter`)
 2. YOLO auf Ubuntu Desktop trainieren
-3. Modell nach ONNX exportieren
-4. ONNX mit Hailo Developer Suite zu HEF fuer `hailo8` kompilieren
-5. HEF auf Pi kopieren (`/home/gast/model.hef`)
-6. Pi + EV3 Setup und USB/RPyC testen
-7. Robot starten und mit Hardware validieren
+3. ONNX exportieren
+4. ONNX zu HEF (`hailo8`) kompilieren
+5. HEF nach `/home/gast/model.hef` auf dem Pi kopieren
+6. Pi + EV3 verbinden und testen
+7. Robot mit echter Hardware validieren
 
-Komplette Anleitung:
-- [docs/INSTALLATION.md](docs/INSTALLATION.md)
-- Hintergrund zur HEF-Erstellung und Versionskompatibilitaet: [HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md](HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md)
+### Detaildoku
 
-### Dependencies
+- Vollanleitung: [docs/INSTALLATION.md](docs/INSTALLATION.md)
+- HEF-Details: [HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md](HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md)
+- EV3 USB/RPyC Setup: [EV3_RPYC_USB_SETUP.md](EV3_RPYC_USB_SETUP.md)
+- EV3 RPyC Library: [EV3_RPYC_CONTROL_LIBRARY.md](EV3_RPYC_CONTROL_LIBRARY.md)
 
-- Pi Python Requirements: [requirements-pi.txt](requirements-pi.txt)
-- EV3 Python Requirements: [requirements-ev3.txt](requirements-ev3.txt)
+</details>
 
-### Schnellstart Befehle
+<details>
+<summary><strong>Ablaufdetails (ausklappen)</strong></summary>
 
-1. EV3-Server starten:
-   - `python3 ev3_start_rpyc_server.py --host 0.0.0.0 --port 18812`
-2. Pi USB/RPyC testen:
-   - `sudo python3 pi_ev3_rpyc_usb_client.py --iface auto --oneshot --verbose`
-3. Robot starten:
-   - Web: `./start_hailo_webserver.sh`
-   - Direkt: `./start_hailo_butter_alert.sh --left-port A --right-port D --lift-port C`
+Robot-States:
+- `SEARCH_RANDOM`
+- `APPROACH_BUTTER`
+- `PICK_SEQUENCE`
+- `DONE_STOP`
 
-## Validierung (ohne Hardware)
+Details und Mermaid:
+- [docs/ARCHITEKTUR_UND_ABLAUF.md](docs/ARCHITEKTUR_UND_ABLAUF.md)
+- [Direkt zum Mermaid-Diagramm](docs/ARCHITEKTUR_UND_ABLAUF.md#programmablauf-als-diagramm-einfach)
+
+</details>
+
+<details>
+<summary><strong>Validierung und CI (ausklappen)</strong></summary>
 
 ```bash
 python3 -m py_compile \
@@ -88,22 +109,25 @@ bash -n start_hailo_robot_web.sh
 bash -n start_hailo_webserver.sh
 ```
 
-CI dazu:
-- [GitHub Action Sanity Checks](.github/workflows/sanity-checks.yml)
+GitHub Action:
+- [/.github/workflows/sanity-checks.yml](.github/workflows/sanity-checks.yml)
 
-## Weitere Dokumente
+</details>
+
+<details>
+<summary><strong>Weitere Dokumente und Artefakte (ausklappen)</strong></summary>
 
 - Ursprungsskizze: [butter_robot_sketch.md](butter_robot_sketch.md)
-- EV3 USB/RPyC Setup: [EV3_RPYC_USB_SETUP.md](EV3_RPYC_USB_SETUP.md)
-- EV3 RPyC Control Library: [EV3_RPYC_CONTROL_LIBRARY.md](EV3_RPYC_CONTROL_LIBRARY.md)
-- Alternative EV3/Pi Setup-Notizen: [EV3_raspberry-setup.md](EV3_raspberry-setup.md)
-- Aktivitaetsdiagramm Dateien: [butter-aktivitatsdiagramm/](butter-aktivitatsdiagramm/)
+- Alternative Setup-Notizen: [EV3_raspberry-setup.md](EV3_raspberry-setup.md)
+- Aktivitaetsdiagramm-Dateien: [butter-aktivitatsdiagramm/](butter-aktivitatsdiagramm/)
 - Projektdokumentation: [Projektdokumenation-Butterbot.docx](Projektdokumenation-Butterbot.docx)
 - Protokollierung: [Protokullierung.docx](Protokullierung.docx)
 - Interview Notiz: [Interview Schreibplan.docx](Interview%20Schreibplan.docx)
 
+</details>
+
 ## Sicherheit
 
-- Keine Secrets/SSH-Keys committen.
-- `rpyc<6` auf Pi und EV3 erzwingen (Kompatibilitaet zu ev3dev).
-- Lift-Stop und Motorgrenzen sind safety-kritisch und nur mit Hardwaretests aendern.
+- Keine Secrets oder private Schluessel committen.
+- `rpyc<6` auf Pi und EV3 beibehalten (ev3dev Kompatibilitaet).
+- Lift-Stop und Motorgrenzen nur nach Hardwaretests aendern.

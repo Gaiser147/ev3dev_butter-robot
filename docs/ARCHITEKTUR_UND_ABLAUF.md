@@ -1,5 +1,13 @@
 # Architektur und Ablauf
 
+## Kurzfassung
+
+1. Kamera liefert Bilder auf dem Pi.
+2. Hailo erkennt Butter.
+3. State Machine entscheidet die Bewegung.
+4. EV3 bekommt Motorbefehle ueber RPyC.
+5. Web UI zeigt Stream + Telemetrie.
+
 ## Programmablauf als Diagramm (einfach)
 
 ```mermaid
@@ -21,79 +29,102 @@ flowchart TD
     M --> N[Ende]
 ```
 
-Hinweis in einfacher Sprache:
-- Wenn keine Butter gefunden wird, sucht der Roboter weiter.
-- Wenn Butter gefunden wird, faehrt er hin.
-- Wenn Butter sehr nah ist, sammelt er sie mit dem Lift ein.
+Einfache Erklaerung:
+- Ohne sichere Erkennung bleibt der Robot im Suchmodus.
+- Mit sicherer Erkennung faehrt er auf das Ziel zu.
+- Bei Naehe startet er die Pick-Sequenz.
 
-## Komponenten
+## Zusammenspiel der Komponenten
+
+```mermaid
+sequenceDiagram
+    participant Cam as Kamera
+    participant Pi as Pi Detection/Control
+    participant EV3 as EV3 via RPyC
+    participant UI as Web UI
+
+    Cam->>Pi: Videoframes
+    Pi->>Pi: Hailo Inferenz + State Machine
+    Pi->>EV3: Fahr/Lift/Sound Befehle
+    Pi->>UI: MJPEG + Telemetrie JSON
+    UI->>Pi: Config/Start/Stop API
+```
+
+## Direktlinks auf zentrale Skripte
+
+- [hailo_butter_ev3_alert.py](../hailo_butter_ev3_alert.py)
+- [hailo_robot_web_control.py](../hailo_robot_web_control.py)
+- [hailo_web_detect_server.py](../hailo_web_detect_server.py)
+- [pi_ev3_rpyc_usb_client.py](../pi_ev3_rpyc_usb_client.py)
+- [ev3_start_rpyc_server.py](../ev3_start_rpyc_server.py)
+
+<details>
+<summary><strong>Komponenten im Detail (ausklappen)</strong></summary>
 
 1. `hailo_web_detect_server.py`
-- Kameraaufnahme, Hailo-Inferenz, Bounding-Box Overlay, MJPEG-Stream.
-- Stellt `HailoDetector` und `open_capture()` bereit.
+- Kameraaufnahme, Hailo-Inferenz, Box-Overlay, MJPEG-Stream
+- Stellt `HailoDetector` und `open_capture()` bereit
 
 2. `hailo_butter_ev3_alert.py`
-- Autonomer Ablauf fuer Suche, Anfahrt, Pick, Lift, Ansage.
-- Nutzt `HailoDetector` fuer Erkennung und RPyC fuer EV3-Steuerung.
-- Optional Telemetrie-JSON fuer Monitoring/Web-Overlay.
+- Autonomer Ablauf (Suche, Anfahrt, Pick, Lift, Ansage)
+- Nutzt Erkennung + RPyC Motorsteuerung
+- Optional Telemetrie-JSON fuer Overlay
 
 3. `hailo_robot_web_control.py`
-- Unified HTTP-Server mit Stream, Config-Management und Robot-Prozesssteuerung.
-- Startet `hailo_butter_ev3_alert.py` als Subprozess.
-- Kann Robot-Input aus geteiltem Raw-Stream (`/raw.mjpg`) beziehen.
+- Webserver mit Stream, Config und Robot-Prozessmanagement
+- Startet `hailo_butter_ev3_alert.py` als Subprozess
+- Kann `/raw.mjpg` als Quelle fuer den Robot nutzen
 
 4. `pi_ev3_rpyc_usb_client.py`
-- Robuster USB-Netzwerk/RPyC-Client Pi -> EV3.
-- Interface-Erkennung, IP-Setzen, Reconnect/Healthcheck.
+- USB-Interface Erkennung
+- IP-Konfiguration + Reconnect + Healthcheck
 
 5. `ev3_start_rpyc_server.py`
-- Startet `rpyc_classic` auf EV3 und spielt optional Startsound.
+- Startet `rpyc_classic` auf EV3
+- Optionaler Startsound
 
-## Datenfluss
+</details>
 
-1. Kamera -> `open_capture()` -> Frames.
-2. Frames -> Hailo Inferenz -> Detections (x1,y1,x2,y2,score).
-3. Detections -> Statemachine -> EV3 Bewegungsbefehle via RPyC.
-4. Statemachine/Detections -> Telemetrie JSON (optional).
-5. Web-UI liest Stream + Telemetrie und zeigt Overlay/Status.
-
-## Statemachine (`hailo_butter_ev3_alert.py`)
+<details>
+<summary><strong>State Machine im Detail (ausklappen)</strong></summary>
 
 Startzustand: `SEARCH_RANDOM`
 
 1. `SEARCH_RANDOM`
-- Robot dreht/pausiert und macht kurze Vorwaerts-Impulse.
-- Wenn `butter` mehrfach bestaetigt (`--confirm-frames` + `--butter-thr`):
-  Wechsel zu `APPROACH_BUTTER`.
+- Drehen, pausieren, kurze Vorwaerts-Impulse
+- Bei bestaetigter Erkennung (`--confirm-frames`, `--butter-thr`) -> `APPROACH_BUTTER`
 
 2. `APPROACH_BUTTER`
-- Lenkt auf Box-Mittelpunkt (Kp-Regler) und faehrt vorwaerts.
-- Wenn Butter "nah" war und danach verloren geht:
-  Wechsel zu `PICK_SEQUENCE`.
-- Bei Tracking-Verlust ueber Grenzwert:
-  Rueckfall zu `SEARCH_RANDOM`.
+- Zentrieren mit Kp-Regler + Vorwaertsfahrt
+- Ziel nah und dann verloren -> `PICK_SEQUENCE`
+- Trackverlust ueber Schwelle -> `SEARCH_RANDOM`
 
 3. `PICK_SEQUENCE`
-- Vorwaerts schieben (`--push-rotations`).
-- Lift absenken bis Touch-Stop/Sicherheitslimit.
-- Lift anheben (`--lift-up-rotations`).
-- Sprachausgabe (`--speak-text`).
-- Danach `DONE_STOP`.
+- Vorwaerts schieben (`--push-rotations`)
+- Lift absenken bis Touch-Stop/Sicherheitslimit
+- Lift anheben (`--lift-up-rotations`)
+- Ansage (`--speak-text`)
+- Danach `DONE_STOP`
 
 4. `DONE_STOP`
-- Motoren stoppen und Lauf beenden.
+- Motoren stoppen, Laufende Sequenz beenden
 
-## Sicherheitsrelevante Logik
+</details>
 
-- Lift-Stop ist auf Touch-Sensor-Stop ausgelegt.
+<details>
+<summary><strong>Sicherheitsrelevante Punkte (ausklappen)</strong></summary>
+
+- Lift-Stop ist auf Touch-Sensor-Stop ausgelegt
 - Harte Limits:
   - `--lift-stop-max-sec`
   - `--lift-down-max-rotations`
-- Software-Fallback kann per Parametern deaktiviert/erzwungen sein.
-- Bei `--dry-run` werden keine echten EV3-Motor/Sound-Befehle ausgefuehrt.
+- `--dry-run` verhindert echte Motor/Sound Befehle
+- Motor-/Lift-Grenzen nur mit Hardwaretests aendern
+
+</details>
 
 ## Konfiguration (Web Control)
 
-- Default-Konfiguration in `DEFAULT_CONFIG`.
-- Persistenz: JSON-Datei (default `/home/gast/.config/hailo_robot_web/config.json`).
-- `build_robot_command()` mappt Web-Config 1:1 auf CLI-Parameter des Robot-Skripts.
+- Defaultwerte in `DEFAULT_CONFIG` in [hailo_robot_web_control.py](../hailo_robot_web_control.py)
+- Persistenzdatei: `/home/gast/.config/hailo_robot_web/config.json`
+- `build_robot_command()` mappt Web-Config auf CLI-Parameter des Robot-Skripts
