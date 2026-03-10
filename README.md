@@ -40,20 +40,22 @@ Das Projekt erkennt "butter" im Kamerabild (HEF-Modell), steuert den EV3 an die 
    - `DONE_STOP`
 5. Optional schreibt der Robot Telemetrie nach JSON (z. B. `/tmp/hailo_robot_telemetry.json`), die vom Web-Control-Overlay genutzt wird.
 
-Details: siehe `docs/ARCHITEKTUR_UND_ABLAUF.md`.
+Details inkl. Mermaid-Ablaufdiagramm: `docs/ARCHITEKTUR_UND_ABLAUF.md`.
 
 ## Installation
 
 Schnellstart:
 
-1. Pi/EV3 Dependencies installieren:
-   - Pi: `docs/INSTALLATION.md` + `requirements-pi.txt`
-   - EV3: `docs/INSTALLATION.md` + `requirements-ev3.txt`
-2. EV3 RPyC-Server starten:
+1. Vollen Installationsablauf lesen:
+   - `docs/INSTALLATION.md` (inkl. Datensatz, Training, ONNX->HEF mit Hailo Developer Suite)
+2. Pi/EV3 Dependencies installieren:
+   - Pi: `requirements-pi.txt`
+   - EV3: `requirements-ev3.txt`
+3. EV3 RPyC-Server starten:
    - `python3 ev3_start_rpyc_server.py --host 0.0.0.0 --port 18812`
-3. Pi USB/RPyC testen:
+4. Pi USB/RPyC testen:
    - `sudo python3 pi_ev3_rpyc_usb_client.py --iface auto --oneshot --verbose`
-4. Robot starten:
+5. Robot starten:
    - Web-Variante: `./start_hailo_webserver.sh`
    - Direkt: `./start_hailo_butter_alert.sh --left-port A --right-port D --lift-port C`
 

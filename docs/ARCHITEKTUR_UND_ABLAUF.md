@@ -1,5 +1,31 @@
 # Architektur und Ablauf
 
+## Programmablauf als Diagramm (einfach)
+
+```mermaid
+flowchart TD
+    A[Start Programm] --> B[Kamera starten]
+    B --> C[Butter im Bild suchen]
+    C --> D{Butter sicher erkannt?}
+    D -- Nein --> E[Suchmodus: drehen, warten, kurz vor]
+    E --> C
+    D -- Ja --> F[Zur Butter fahren und zentrieren]
+    F --> G{Butter nah genug?}
+    G -- Nein --> F
+    G -- Ja --> H[Pick-Sequenz starten]
+    H --> I[Vorwaerts schieben]
+    I --> J[Lift absenken bis Touch-Stop]
+    J --> K[Lift anheben]
+    K --> L[EV3 sagt: butter found]
+    L --> M[Motoren stoppen]
+    M --> N[Ende]
+```
+
+Hinweis in einfacher Sprache:
+- Wenn keine Butter gefunden wird, sucht der Roboter weiter.
+- Wenn Butter gefunden wird, faehrt er hin.
+- Wenn Butter sehr nah ist, sammelt er sie mit dem Lift ein.
+
 ## Komponenten
 
 1. `hailo_web_detect_server.py`
