@@ -1,0 +1,5 @@
+# Pi runtime dependencies (pip-installable subset)
+# Note: hailo_platform is provided by HailoRT runtime/bindings, not via pip.
+rpyc<6
+numpy
+opencv-python

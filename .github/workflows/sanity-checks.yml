@@ -1,0 +1,33 @@
+name: Sanity Checks
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  lint-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Python syntax check
+        run: |
+          python -m py_compile \
+            hailo_butter_ev3_alert.py \
+            hailo_web_detect_server.py \
+            hailo_robot_web_control.py \
+            pi_ev3_rpyc_usb_client.py \
+            ev3_start_rpyc_server.py
+
+      - name: Shell syntax check
+        run: |
+          bash -n start_hailo_butter_alert.sh
+          bash -n start_hailo_robot_web.sh
+          bash -n start_hailo_webserver.sh

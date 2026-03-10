@@ -1,0 +1,2 @@
+rpyc<6
+python-ev3dev2

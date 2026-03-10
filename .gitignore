@@ -1,0 +1,51 @@
+# IMPORTANT
+# This git repository currently lives in /home/gast.
+# Ignore hidden home content by default to avoid leaking personal files.
+.*
+!.gitignore
+!.github/
+
+# Project documentation
+!README.md
+!butter_robot_sketch.md
+!EV3_RPYC_USB_SETUP.md
+!EV3_RPYC_CONTROL_LIBRARY.md
+!EV3_raspberry-setup.md
+!HEF_ERSTELLUNG_RPI5_AI_HAT_PLUS_26TOPS.md
+!docs/
+!.github/workflows/
+
+# Project runtime scripts
+!hailo_butter_ev3_alert.py
+!hailo_robot_web_control.py
+!hailo_web_detect_server.py
+!pi_ev3_rpyc_usb_client.py
+!ev3_start_rpyc_server.py
+!start_hailo_butter_alert.sh
+!start_hailo_robot_web.sh
+!start_hailo_webserver.sh
+!requirements-pi.txt
+!requirements-ev3.txt
+
+# Local assistant/control files
+AGENTS.md
+codex_save-run.txt
+
+# Python/cache/log artifacts
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+
+# Large/binary runtime artifacts
+*.deb
+*.hef
+model.hef
+
+# Local traces / profiling outputs
+gstshark_*/
+
+# Local build/vendor trees (optional to re-add later if needed)
+src/
+hailort-drivers/
+hailort-install-test/
