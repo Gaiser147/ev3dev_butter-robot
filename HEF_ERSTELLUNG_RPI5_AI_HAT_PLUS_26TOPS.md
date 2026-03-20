@@ -165,7 +165,3 @@ Pruefen:
   - https://github.com/hailo-ai/hailo_model_zoo
 - HailoRT README (Hinweis zu Hailo-8 vs. master/hailo8 branch):
   - https://github.com/hailo-ai/hailort
-
----
-
-Wenn du willst, kann ich im naechsten Schritt eine zweite Datei mit einem **konkreten, reproduzierbaren Build-Rezept** fuer dein Modell erstellen (inkl. Ordnerstruktur, Befehle fuer ONNX->HAR->HEF, und einem abschliessenden Pi-Kompatibilitaetstest als Shell-Skript).
