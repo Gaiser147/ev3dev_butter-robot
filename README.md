@@ -126,9 +126,3 @@ GitHub Action:
 - Interview Notiz: [Interview Schreibplan.docx](Interview%20Schreibplan.docx)
 
 </details>
-
-## Sicherheit
-
-- Keine Secrets oder private Schluessel committen.
-- `rpyc<6` auf Pi und EV3 beibehalten (ev3dev Kompatibilitaet).
-- Lift-Stop und Motorgrenzen nur nach Hardwaretests aendern.
