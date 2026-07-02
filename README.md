@@ -5,6 +5,7 @@ Autonomer Robot fuer Butter-Erkennung und Aufnahme:
 - Vision auf Raspberry Pi 5 + Hailo AI HAT+ (26 TOPS)
 - Aktorik auf LEGO EV3 (ev3dev) via USB + RPyC
 - Web-Ansicht mit Live-Stream und Robot-Status
+- [Pretrained Detection Model (YOLOv11)](https://app.roboflow.com/info-robot/butter-detection-model-2/models/butter-detection-model-2/1)
 
 ## Auf Einen Blick
 
