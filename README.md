@@ -58,7 +58,7 @@ flowchart LR
 | [requirements-ev3.txt](requirements-ev3.txt) | EV3 Python Dependencies |
 
 <details>
-<summary><strong>Installationsdetails (ausklappen)</strong></summary>
+<summary><strong>Installationsdetails</strong></summary>
 
 ### End-to-End Reihenfolge
 
@@ -80,7 +80,7 @@ flowchart LR
 </details>
 
 <details>
-<summary><strong>Ablaufdetails (ausklappen)</strong></summary>
+<summary><strong>Ablaufdetails</strong></summary>
 
 Robot-States:
 - `SEARCH_RANDOM`
@@ -95,7 +95,7 @@ Details und Mermaid:
 </details>
 
 <details>
-<summary><strong>Validierung und CI (ausklappen)</strong></summary>
+<summary><strong>Validierung und CI</strong></summary>
 
 ```bash
 python3 -m py_compile \
@@ -116,7 +116,7 @@ GitHub Action:
 </details>
 
 <details>
-<summary><strong>Weitere Dokumente und Artefakte (ausklappen)</strong></summary>
+<summary><strong>Weitere Dokumente und Artefakte</strong></summary>
 
 - Ursprungsskizze: [butter_robot_sketch.md](butter_robot_sketch.md)
 - Alternative Setup-Notizen: [EV3_raspberry-setup.md](EV3_raspberry-setup.md)
