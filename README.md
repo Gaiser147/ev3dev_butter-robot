@@ -9,6 +9,10 @@ Autonomer Robot fuer Butter-Erkennung und Aufnahme:
 
 ## Auf Einen Blick
 
+Vorderseite            |  Detailansicht
+:-------------------------:|:-------------------------:
+![Vorderseite](https://raw.githubusercontent.com/Gaiser147/ev3dev_butter-robot/refs/heads/main/Butter-Roboter_Vorderseite_new.jpg) | ![Detailansicht](https://raw.githubusercontent.com/Gaiser147/ev3dev_butter-robot/refs/heads/main/Butter-Roboter_seitlich.jpg)
+
 | Thema | Startpunkt |
 | --- | --- |
 | Installation komplett (inkl. Training/HEF) | [docs/INSTALLATION.md](docs/INSTALLATION.md) |
