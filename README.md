@@ -5,7 +5,7 @@ Autonomer Robot fuer Butter-Erkennung und Aufnahme:
 - Vision auf Raspberry Pi 5 + Hailo AI HAT+ (26 TOPS)
 - Aktorik auf LEGO EV3 (ev3dev) via USB + RPyC
 - Web-Ansicht mit Live-Stream und Robot-Status
-- [**> Pretrained Detection Model (YOLOv11) <**](https://app.roboflow.com/info-robot/butter-detection-model-2/models/butter-detection-model-2/1)
+- [**Fertiges Datenset und pretrained model (YOLOv11)**](https://universe.roboflow.com/info-robot/butter-detection-model-2)
 
 ## Auf Einen Blick
 
@@ -67,7 +67,7 @@ flowchart LR
 
 ### End-to-End Reihenfolge
 
-1. Datensatz erstellen/labeln (Klasse `butter`)
+1. [Datensatz](https://universe.roboflow.com/info-robot/butter-detection-model-2) erstellen/labeln (Klasse `butter`)
 2. YOLO auf Ubuntu Desktop trainieren
 3. ONNX exportieren
 4. ONNX zu HEF (`hailo8`) kompilieren
